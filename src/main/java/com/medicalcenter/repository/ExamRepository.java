@@ -1,0 +1,13 @@
+package com.medicalcenter.repository;
+
+import com.medicalcenter.model.Exam;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface ExamRepository extends JpaRepository<Exam, Integer> {
+    // Εύρεση εξετάσεων ανά γιατρό
+    List<Exam> findByDoctorID(int doctorID);
+}
