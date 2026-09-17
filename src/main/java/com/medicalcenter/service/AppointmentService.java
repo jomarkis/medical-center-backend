@@ -3,6 +3,7 @@ package com.medicalcenter.service;
 import com.medicalcenter.model.Appointment;
 import com.medicalcenter.model.Exam;
 import com.medicalcenter.repository.AppointmentRepository;
+import com.medicalcenter.repository.DoctorRepository;
 import com.medicalcenter.repository.ExamRepository;
 import com.medicalcenter.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class AppointmentService {
 
     @Autowired
     private PatientRepository patientRepository;
+
+    @Autowired
+    private DoctorRepository doctorRepository;
 
     public List<Appointment> getAllAppointments() {
         return appointmentRepository.findAll();
@@ -52,5 +56,12 @@ public class AppointmentService {
 
         Appointment appointment = new Appointment(patientID, examID, date, fastResults, finalCost);
         return appointmentRepository.save(appointment);
+    }
+
+    public List<Appointment> getAppointmentsByDoctor(int doctorID) {
+        if (!doctorRepository.existsById(doctorID)) {
+            throw new IllegalArgumentException("Doctor not found with ID: " + doctorID);
+        }
+        return appointmentRepository.findAppointmentsByDoctorID(doctorID);
     }
 }
