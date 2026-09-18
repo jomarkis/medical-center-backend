@@ -13,6 +13,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.annotation.Transactional;
+
+@Transactional(readOnly = true)
 @Service
 public class AppointmentService {
 
@@ -48,6 +51,7 @@ public class AppointmentService {
         return appointmentRepository.findWithFilters(examID, patientID, doctorID, date);
     }
 
+    @Transactional
     public Appointment bookAppointment(int patientID, int examID, LocalDate date, boolean fastResults) {
         if (!patientRepository.existsById(patientID)) {
             throw new IllegalArgumentException("Patient not found with ID: " + patientID);
@@ -79,6 +83,7 @@ public class AppointmentService {
         return appointmentRepository.getPatientIncomeStats(patientID, minIncome, maxIncome);
     }
 
+    @Transactional
     public Map<String, String> deleteAppointment(Integer id) {
         if (!appointmentRepository.existsById(id)) {
             throw new IllegalArgumentException("Appointment not found with ID: " + id);

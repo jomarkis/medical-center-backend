@@ -62,11 +62,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     );
 
     @Query("""
-    SELECT e.category as category, SUM(a.cost) as totalIncome, COUNT(a) as totalAppointments
+    SELECT e.examCategory as category, SUM(a.cost) as totalIncome, COUNT(a) as totalAppointments
     FROM Appointment a
     JOIN Exam e ON e.examID = a.examID
-    WHERE (:category IS NULL OR e.category = :category)
-    GROUP BY e.category
+    WHERE (:category IS NULL OR e.examCategory = :category)
+    GROUP BY e.examCategory
     HAVING (:minIncome IS NULL OR SUM(a.cost) >= :minIncome)
        AND (:maxIncome IS NULL OR SUM(a.cost) <= :maxIncome)
     ORDER BY SUM(a.cost) DESC

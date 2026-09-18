@@ -3,6 +3,7 @@ package com.medicalcenter.controller;
 import com.medicalcenter.dto.AppointmentRequest;
 import com.medicalcenter.model.Appointment;
 import com.medicalcenter.service.AppointmentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ public class AppointmentController {
     // POST /api/appointments -> Κλείσιμο νέου ραντεβού
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Appointment createAppointment(@RequestBody AppointmentRequest request) {
+    public Appointment createAppointment(@Valid @RequestBody AppointmentRequest request) {
         return appointmentService.bookAppointment(
                 request.getPatientID(),
                 request.getExamID(),
@@ -45,11 +46,12 @@ public class AppointmentController {
     }
 
 
-
     // DELETE /api/appointments/delete/{id}
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Map<String, String>> deleteAppointment(@PathVariable Integer id) {
         Map<String, String> response = appointmentService.deleteAppointment(id);
         return ResponseEntity.ok(response);
     }
+
+
 }
