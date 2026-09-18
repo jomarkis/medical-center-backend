@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AppointmentService {
@@ -64,5 +65,30 @@ public class AppointmentService {
 
         Appointment appointment = new Appointment(patientID, examID, date, fastResults, finalCost);
         return appointmentRepository.save(appointment);
+    }
+
+    public List<Map<String, Object>> getPatientIncomeStats(Integer patientID, Double minIncome, Double maxIncome) {
+        if (patientID != null && !patientRepository.existsById(patientID)) {
+            throw new IllegalArgumentException("Patient not found with ID: " + patientID);
+        }
+
+        if (minIncome != null && maxIncome != null && minIncome > maxIncome) {
+            throw new IllegalArgumentException("minIncome cannot be greater than maxIncome.");
+        }
+
+        return appointmentRepository.getPatientIncomeStats(patientID, minIncome, maxIncome);
+    }
+
+    public Map<String, String> deleteAppointment(Integer id) {
+        if (!appointmentRepository.existsById(id)) {
+            throw new IllegalArgumentException("Appointment not found with ID: " + id);
+        }
+
+        appointmentRepository.deleteById(id);
+
+        return Map.of(
+                "status", "success",
+                "message", "Appointment with ID " + id + " was successfully deleted."
+        );
     }
 }

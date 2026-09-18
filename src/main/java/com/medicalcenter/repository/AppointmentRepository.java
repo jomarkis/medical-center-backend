@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
@@ -28,5 +29,51 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             @Param("patientID") Integer patientID,
             @Param("doctorID") Integer doctorID,
             @Param("date") LocalDate date
+    );
+
+    @Query("""
+    SELECT a.patientID AS patientID, SUM(a.cost) AS totalIncome, COUNT(a) AS totalAppointments
+    FROM Appointment a
+    WHERE (:patientID IS NULL OR a.patientID = :patientID)
+    GROUP BY a.patientID
+    HAVING (:minIncome IS NULL OR SUM(a.cost) >= :minIncome)
+       AND (:maxIncome IS NULL OR SUM(a.cost) <= :maxIncome)
+    ORDER BY SUM(a.cost) DESC
+""")
+    List<Map<String, Object>> getPatientIncomeStats(
+            @Param("patientID") Integer patientID,
+            @Param("minIncome") Double minIncome,
+            @Param("maxIncome") Double maxIncome
+    );
+
+    @Query("""
+    SELECT a.examID as examID, SUM(a.cost) as totalIncome, COUNT(a) as totalAppointments
+    FROM Appointment a
+    WHERE (:examID IS NULL OR a.examID = :examID)
+    GROUP BY a.examID
+    HAVING (:minIncome IS NULL OR SUM(a.cost) >= :minIncome)
+       AND (:maxIncome IS NULL OR SUM(a.cost) <= :maxIncome)
+    ORDER BY SUM(a.cost) DESC
+""")
+    List<Map<String, Object>> getExamIncomeStats(
+            @Param("examID") Integer examID,
+            @Param("minIncome") Double minIncome,
+            @Param("maxIncome") Double maxIncome
+    );
+
+    @Query("""
+    SELECT e.category as category, SUM(a.cost) as totalIncome, COUNT(a) as totalAppointments
+    FROM Appointment a
+    JOIN Exam e ON e.examID = a.examID
+    WHERE (:category IS NULL OR e.category = :category)
+    GROUP BY e.category
+    HAVING (:minIncome IS NULL OR SUM(a.cost) >= :minIncome)
+       AND (:maxIncome IS NULL OR SUM(a.cost) <= :maxIncome)
+    ORDER BY SUM(a.cost) DESC
+""")
+    List<Map<String, Object>> getCategoryIncomeStats(
+            @Param("category") String category,
+            @Param("minIncome") Double minIncome,
+            @Param("maxIncome") Double maxIncome
     );
 }

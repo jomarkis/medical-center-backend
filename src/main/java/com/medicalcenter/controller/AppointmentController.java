@@ -6,10 +6,12 @@ import com.medicalcenter.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -40,5 +42,14 @@ public class AppointmentController {
                 request.getAppointmentDate(),
                 request.isFastResults()
         );
+    }
+
+
+
+    // DELETE /api/appointments/delete/{id}
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Map<String, String>> deleteAppointment(@PathVariable Integer id) {
+        Map<String, String> response = appointmentService.deleteAppointment(id);
+        return ResponseEntity.ok(response);
     }
 }
