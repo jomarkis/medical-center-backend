@@ -24,4 +24,11 @@ public class ExamService {
 
         return examRepository.findByDoctorID(doctorID);
     }
+
+    public Exam createExam(Exam exam) {
+        if (!doctorRepository.existsById(exam.getDoctorID())) {
+            throw new IllegalArgumentException("Cannot create exam. Doctor not found with ID: " + exam.getDoctorID());
+        }
+        return examRepository.save(exam);
+    }
 }

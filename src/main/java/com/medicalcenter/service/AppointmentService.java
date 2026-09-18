@@ -31,12 +31,20 @@ public class AppointmentService {
         return appointmentRepository.findAll();
     }
 
-    public List<Appointment> getAppointmentsByExam(int examID) {
-        return appointmentRepository.findByExamID(examID);
-    }
+    public List<Appointment> getAppointments(Integer examID, Integer patientID, Integer doctorID, LocalDate date) {
+        // Ελέγχουμε μόνο όσα πεδία έχουν δοθεί πραγματικά από το frontend
+        if (examID != null && !examRepository.existsById(examID)) {
+            throw new IllegalArgumentException("Exam not found with ID: " + examID);
+        }
+        if (patientID != null && !patientRepository.existsById(patientID)) {
+            throw new IllegalArgumentException("Patient not found with ID: " + patientID);
+        }
+        if (doctorID != null && !doctorRepository.existsById(doctorID)) {
+            throw new IllegalArgumentException("Doctor not found with ID: " + doctorID);
+        }
 
-    public List<Appointment> getAppointmentsByPatient(int patientID) {
-        return appointmentRepository.findByPatientID(patientID);
+        // Αν όλα τα δοθέντα IDs είναι έγκυρα, εκτελείται το συνδυαστικό query
+        return appointmentRepository.findWithFilters(examID, patientID, doctorID, date);
     }
 
     public Appointment bookAppointment(int patientID, int examID, LocalDate date, boolean fastResults) {
@@ -56,12 +64,5 @@ public class AppointmentService {
 
         Appointment appointment = new Appointment(patientID, examID, date, fastResults, finalCost);
         return appointmentRepository.save(appointment);
-    }
-
-    public List<Appointment> getAppointmentsByDoctor(int doctorID) {
-        if (!doctorRepository.existsById(doctorID)) {
-            throw new IllegalArgumentException("Doctor not found with ID: " + doctorID);
-        }
-        return appointmentRepository.findAppointmentsByDoctorID(doctorID);
     }
 }

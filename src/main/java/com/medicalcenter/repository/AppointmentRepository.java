@@ -12,20 +12,21 @@ import java.util.List;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
 
-    // Βρίσκει τα ραντεβού μιας εξέτασης
-    List<Appointment> findByExamID(int examID);
-
-    // Βρίσκει τα ραντεβού ενός ασθενή
-    List<Appointment> findByPatientID(int patientID);
-
-
     // Μετράει πόσα ραντεβού έχουν ήδη κλειστεί για συγκεκριμένη εξέταση σε συγκεκριμένη ημέρα
     long countByExamIDAndAppointmentDate(int examID, LocalDate appointmentDate);
 
     @Query("""
     SELECT a FROM Appointment a
-    JOIN Exam e ON a.examID = e.examID 
-    WHERE e.doctorID = :doctorID
+    JOIN Exam e ON a.examID = e.examID
+    WHERE (:examID IS NULL OR a.examID = :examID)
+      AND (:patientID IS NULL OR a.patientID = :patientID)
+      AND (:doctorID IS NULL OR e.doctorID = :doctorID)
+      AND (:date IS NULL OR a.appointmentDate = :date)
 """)
-    List<Appointment> findAppointmentsByDoctorID(@Param("doctorID") int doctorID);
+    List<Appointment> findWithFilters(
+            @Param("examID") Integer examID,
+            @Param("patientID") Integer patientID,
+            @Param("doctorID") Integer doctorID,
+            @Param("date") LocalDate date
+    );
 }

@@ -4,8 +4,11 @@ import com.medicalcenter.dto.AppointmentRequest;
 import com.medicalcenter.model.Appointment;
 import com.medicalcenter.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -20,19 +23,16 @@ public class AppointmentController {
     @GetMapping
     public List<Appointment> getAppointments(
             @RequestParam(required = false) Integer examID,
-            @RequestParam(required = false) Integer patientID) {
+            @RequestParam(required = false) Integer patientID,
+            @RequestParam(required = false) Integer doctorID,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-        if (examID != null) {
-            return appointmentService.getAppointmentsByExam(examID);
-        }
-        if (patientID != null) {
-            return appointmentService.getAppointmentsByPatient(patientID);
-        }
-        return appointmentService.getAllAppointments();
+        return appointmentService.getAppointments(examID, patientID, doctorID, date);
     }
 
     // POST /api/appointments -> Κλείσιμο νέου ραντεβού
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Appointment createAppointment(@RequestBody AppointmentRequest request) {
         return appointmentService.bookAppointment(
                 request.getPatientID(),
