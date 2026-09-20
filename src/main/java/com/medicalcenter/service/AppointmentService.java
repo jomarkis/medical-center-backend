@@ -19,14 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AppointmentService {
 
-    @Autowired
-    private AppointmentRepository appointmentRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final ExamRepository examRepository;
+    private final PatientRepository patientRepository;
 
-    @Autowired
-    private ExamRepository examRepository;
-
-    @Autowired
-    private PatientRepository patientRepository;
+    public AppointmentService(AppointmentRepository appointmentRepository,
+                              ExamRepository examRepository,
+                              PatientRepository patientRepository,
+                              DoctorRepository doctorRepository) {
+        this.appointmentRepository = appointmentRepository;
+        this.examRepository = examRepository;
+        this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
+    }
 
     @Autowired
     private DoctorRepository doctorRepository;
