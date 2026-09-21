@@ -76,17 +76,6 @@ public class AppointmentService {
         return appointmentRepository.save(appointment);
     }
 
-    public List<Map<String, Object>> getPatientIncomeStats(Integer patientID, Double minIncome, Double maxIncome) {
-        if (patientID != null && !patientRepository.existsById(patientID)) {
-            throw new IllegalArgumentException("Patient not found with ID: " + patientID);
-        }
-
-        if (minIncome != null && maxIncome != null && minIncome > maxIncome) {
-            throw new IllegalArgumentException("minIncome cannot be greater than maxIncome.");
-        }
-
-        return appointmentRepository.getPatientIncomeStats(patientID, minIncome, maxIncome);
-    }
 
     @Transactional
     public Map<String, String> deleteAppointment(Integer id) {

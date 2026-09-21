@@ -1,9 +1,6 @@
 package com.medicalcenter.service;
 
-import com.medicalcenter.model.Appointment;
-import com.medicalcenter.model.Exam;
-import com.medicalcenter.model.ImagingExamination;
-import com.medicalcenter.model.Patient;
+import com.medicalcenter.model.*;
 import com.medicalcenter.repository.AppointmentRepository;
 import com.medicalcenter.repository.DoctorRepository;
 import com.medicalcenter.repository.ExamRepository;
@@ -16,6 +13,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +39,8 @@ class AppointmentsServiceTest {
 
     @InjectMocks
     private AppointmentService appointmentService;
+
+    // ## Appointment Booking Tests ##
 
     @Test
     @DisplayName("Successful appointment booking")
@@ -136,5 +138,141 @@ class AppointmentsServiceTest {
 
             assertEquals("Exam not found with ID: 11", exception.getMessage());
             verify(appointmentRepository, never()).save(any(Appointment.class));
+        }
+
+        // ## Get Appointment Tests ##
+
+        @Test
+        @DisplayName("Get appointments with valid filters")
+        void getAppointmentsWithValidFilters() {
+            LocalDate date = LocalDate.now();
+
+            Patient mockPatient = new Patient();
+            mockPatient.setPatientID(1);
+
+            Exam mockExam = new ImagingExamination();
+            mockExam.setExamID(10);
+
+            Doctor mockDoctor = new Doctor();
+            mockDoctor.setDoctorID(100);
+
+            Appointment mockAppointment = new Appointment();
+            mockAppointment.setAppointmentID(200);
+
+            when(examRepository.existsById(10)).thenReturn(true);
+            when(patientRepository.existsById(1)).thenReturn(true);
+            when(doctorRepository.existsById(100)).thenReturn(true);
+            when(appointmentRepository.findWithFilters(10, 1, 100, date))
+                    .thenReturn(List.of(mockAppointment));
+
+            List<Appointment> appointments = appointmentService.getAppointments(10, 1, 100, date);
+
+            assertFalse(appointments.isEmpty());
+            assertTrue(appointments.contains(mockAppointment));
+            assertEquals(200, mockAppointment.getAppointmentID());
+            verify(appointmentRepository, times(1)).findWithFilters(10, 1, 100, date);
+        }
+
+        @Test
+        @DisplayName("Get appointments when invalid patient ID")
+        void getAppointmentsWithInvalidPatientID() {
+            LocalDate date = LocalDate.now();
+
+            Patient mockPatient = new Patient();
+            mockPatient.setPatientID(1);
+
+            Exam mockExam = new ImagingExamination();
+            mockExam.setExamID(10);
+
+            Doctor mockDoctor = new Doctor();
+            mockDoctor.setDoctorID(100);
+
+            when(examRepository.existsById(10)).thenReturn(true);
+            when(patientRepository.existsById(999)).thenReturn(false);
+
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                appointmentService.getAppointments(10,  999, 100, date)        );
+
+            assertEquals("Patient not found with ID: 999", exception.getMessage());
+            verify(appointmentRepository, never()).findWithFilters(any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Get appointments when invalid exam ID")
+        void getAppointmentsWithInvalidExamID() {
+            LocalDate date = LocalDate.now();
+
+            Patient mockPatient = new Patient();
+            mockPatient.setPatientID(1);
+
+            Exam mockExam = new ImagingExamination();
+            mockExam.setExamID(10);
+
+            Doctor mockDoctor = new Doctor();
+            mockDoctor.setDoctorID(100);
+
+            when(examRepository.existsById(999)).thenReturn(false);
+
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                appointmentService.getAppointments(999, 1, 100, date)        );
+
+            assertEquals("Exam not found with ID: 999", exception.getMessage());
+            verify(appointmentRepository, never()).findWithFilters(any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Get appointments when invalid doctor ID")
+        void getAppointmentsWithInvalidDoctorID() {
+            LocalDate date = LocalDate.now();
+
+            Patient mockPatient = new Patient();
+            mockPatient.setPatientID(1);
+
+            Exam mockExam = new ImagingExamination();
+            mockExam.setExamID(10);
+
+            Doctor mockDoctor = new Doctor();
+            mockDoctor.setDoctorID(100);
+
+            when(examRepository.existsById(10)).thenReturn(true);
+            when(patientRepository.existsById(1)).thenReturn(true);
+            when(doctorRepository.existsById(999)).thenReturn(false);
+
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                appointmentService.getAppointments(10, 1, 999, date)        );
+
+            assertEquals("Doctor not found with ID: 999", exception.getMessage());
+            verify(appointmentRepository, never()).findWithFilters(any(), any(), any(), any());
+        }
+
+        // ## Delete Appointment Test
+
+        @Test
+        @DisplayName("Delete appointment successfully")
+        void deleteAppointmentSuccessfully() {
+            Appointment mockAppointment = new Appointment();
+            mockAppointment.setAppointmentID(1);
+
+            when(appointmentRepository.existsById(1)).thenReturn(true);
+
+            appointmentService.deleteAppointment(1);
+
+            verify(appointmentRepository, times(1)).deleteById(1);
+        }
+
+        @Test
+        @DisplayName("Delete appointment failed")
+        void deleteAppointmentFailed() {
+            Appointment mockAppointment = new Appointment();
+            mockAppointment.setAppointmentID(1);
+
+            when(appointmentRepository.existsById(999)).thenReturn(false);
+
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                appointmentService.deleteAppointment(999)
+            );
+
+            assertEquals("Appointment not found with ID: 999", exception.getMessage());
+            verify(appointmentRepository, never()).deleteById(999);
         }
     }
