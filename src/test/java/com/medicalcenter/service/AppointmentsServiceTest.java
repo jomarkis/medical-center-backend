@@ -8,6 +8,7 @@ import com.medicalcenter.repository.AppointmentRepository;
 import com.medicalcenter.repository.DoctorRepository;
 import com.medicalcenter.repository.ExamRepository;
 import com.medicalcenter.repository.PatientRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AppointmentsServiceTest {
 
-    // 1. Πρέπει να υπάρχουν και τα 4 mocks που ζητάει ο constructor:
     @Mock
     private AppointmentRepository appointmentRepository;
 
@@ -35,15 +35,14 @@ class AppointmentsServiceTest {
     private PatientRepository patientRepository;
 
     @Mock
-    private DoctorRepository doctorRepository; // Μην το παραλείψεις!
+    private DoctorRepository doctorRepository;
 
-    // 2. Εδώ γίνεται η έγχυση των 4 mocks:
     @InjectMocks
     private AppointmentService appointmentService;
 
     @Test
+    @DisplayName("Successful appointment booking")
     void appointmentBooking() {
-        // Arrange
         LocalDate date = LocalDate.now();
 
         Patient mockPatient = new Patient();
@@ -58,18 +57,84 @@ class AppointmentsServiceTest {
         mockSaved.setAppointmentID(100);
         mockSaved.setCost(50.0f);
 
-        // Χρησιμοποίησε any() για να αποφύγεις mismatch σε types (int vs Integer)
         when(patientRepository.existsById(1)).thenReturn(true);
         when(examRepository.findById(10)).thenReturn(Optional.of(mockExam));
         when(appointmentRepository.countByExamIDAndAppointmentDate(10, date)).thenReturn(0L);
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(mockSaved);
 
-        // Act
         Appointment result = appointmentService.bookAppointment(1, 10, date, false);
 
-        // Assert
         assertNotNull(result);
         assertEquals(50.0, result.getCost());
         verify(appointmentRepository).save(any(Appointment.class));
     }
-}
+
+    @Test
+    @DisplayName("Booking fails when no slots are available")
+    void appointmentBookingNoSlots() {
+        LocalDate date = LocalDate.now();
+
+        Patient mockPatient = new Patient();
+        mockPatient.setPatientID(1);
+
+        Exam mockExam = new ImagingExamination();
+        mockExam.setExamID(10);
+        mockExam.setCost(50.0f);
+        mockExam.setMaxSlotsPerDay(5);
+
+
+        when(patientRepository.existsById(1)).thenReturn(true);
+        when(examRepository.findById(10)).thenReturn(Optional.of(mockExam));
+        when(appointmentRepository.countByExamIDAndAppointmentDate(10, date)).thenReturn(5L); // No slots available
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
+                appointmentService.bookAppointment(1, 10, date, false)
+        );
+
+        assertEquals("No available slots for this exam on date: " + date, exception.getMessage());
+        verify(appointmentRepository, never()).save(any(Appointment.class));
+        }
+
+        @Test
+        @DisplayName("Booking fails when patient does not exist")
+        void appointmentBookingPatientNotFound() {
+            LocalDate date = LocalDate.now();
+
+            Patient mockPatient = new Patient();
+            mockPatient.setPatientID(1);
+
+            Exam mockExam = new ImagingExamination();
+            mockExam.setExamID(10);
+
+            when(patientRepository.existsById(2)).thenReturn(false);
+
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                    appointmentService.bookAppointment(2, 10, date, false)
+            );
+
+            assertEquals("Patient not found with ID: 2", exception.getMessage());
+            verify(appointmentRepository, never()).save(any(Appointment.class));
+        }
+
+        @Test
+        @DisplayName("Booking fails when exam does not exist")
+        void appointmentBookingExamNotFound() {
+            LocalDate date = LocalDate.now();
+
+            Patient mockPatient = new Patient();
+            mockPatient.setPatientID(1);
+
+            Exam mockExam = new ImagingExamination();
+            mockExam.setExamID(10);
+
+            when(patientRepository.existsById(1)).thenReturn(true);
+            when(examRepository.findById(11)).thenReturn(Optional.empty());
+
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                    appointmentService.bookAppointment(1, 11, date, false)
+            );
+
+            assertEquals("Exam not found with ID: 11", exception.getMessage());
+            verify(appointmentRepository, never()).save(any(Appointment.class));
+        }
+    }
