@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Integer> {
-    // Εύρεση εξετάσεων ανά γιατρό
     List<Exam> findByDoctorID(int doctorID);
 }
