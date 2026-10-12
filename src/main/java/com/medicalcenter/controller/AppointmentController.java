@@ -65,6 +65,4 @@ public class AppointmentController {
         Map<String, String> response = appointmentService.deleteAppointment(id);
         return ResponseEntity.ok(response);
     }
-
-
 }

@@ -12,7 +12,6 @@ public class Patient {
 
     @Column(nullable = false)
     private String patientName; // Patient name
-
     private String patientPhone; // Patient phone
     private String email; // Patient email
 

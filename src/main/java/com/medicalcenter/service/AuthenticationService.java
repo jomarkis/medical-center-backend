@@ -1,6 +1,7 @@
 package com.medicalcenter.service;
 
 import com.medicalcenter.dto.*;
+import com.medicalcenter.repository.DoctorRepository;
 import com.medicalcenter.repository.PatientRepository;
 import com.medicalcenter.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,13 +14,15 @@ public class AuthenticationService {
 
     private final JwtUtils jwtUtils;
     private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
 
     @Value("${admin.pin:1234}")
     private String adminPin;
 
-    public AuthenticationService(JwtUtils jwtUtils, PatientRepository patientRepository) {
+    public AuthenticationService(JwtUtils jwtUtils, PatientRepository patientRepository, DoctorRepository doctorRepository) {
         this.jwtUtils = jwtUtils;
         this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -46,12 +49,18 @@ public class AuthenticationService {
         if (doctorID == null || doctorID <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Doctor ID");
         }
+        if (!doctorRepository.existsById(doctorID)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor with ID " + doctorID + " not found");
+        }
         String token = jwtUtils.generateToken("ROLE_DOCTOR", doctorID);
         return new LoginResponse(token, "ROLE_DOCTOR", doctorID);
     }
 
     private LoginResponse authenticatePatient(Integer patientID) {
-        if (patientID == null || !patientRepository.existsById(patientID)) {
+        if (patientID == null || patientID <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Patient ID");
+        }
+        if (!patientRepository.existsById(patientID)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient with ID " + patientID + " not found");
         }
         String token = jwtUtils.generateToken("ROLE_PATIENT", patientID);

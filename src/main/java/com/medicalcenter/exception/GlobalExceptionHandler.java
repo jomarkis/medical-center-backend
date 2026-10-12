@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 status.value(),
                 status.getReasonPhrase(),
-                ex.getMessage()
+                ex.getReason()
         );
 
         return new ResponseEntity<>(error, status);
