@@ -33,7 +33,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/statistics/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/patients/**", "/api/doctors/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/patients/**", "/api/doctors/**").hasRole("ADMIN")
+                        .requestMatchers("/api/stats/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/appointments/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/appointments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/exams/**").hasRole("ADMIN")
