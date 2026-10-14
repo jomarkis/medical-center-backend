@@ -15,7 +15,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Για περιπτώσεις όπου δεν βρέθηκε ID (π.χ. patient, appointment) ή άκυρα ορίσματα (π.χ. minIncome > maxIncome)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         HttpStatus status = ex.getMessage().toLowerCase().contains("not found")
@@ -31,7 +30,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, status);
     }
 
-    // Για business κανόνες που παραβιάζονται (π.χ. δεν υπάρχουν διαθέσιμα slots)
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
         HttpStatus status = HttpStatus.CONFLICT; // 409 Conflict
@@ -45,7 +43,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, status);
     }
 
-    // Fallback για οποιοδήποτε άλλο απρόβλεπτο σφάλμα
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
         ErrorResponse error = new ErrorResponse(

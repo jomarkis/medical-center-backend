@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*") // Επιτρέπει κλήσεις από το Frontend κατά το development
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthenticationService authenticationService;

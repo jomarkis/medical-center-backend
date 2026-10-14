@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import io.jsonwebtoken.Claims;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -39,23 +40,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String jwt = authHeader.substring(7); // Αφαίρεση του προθέματος "Bearer "
+        final String jwt = authHeader.substring(7);
 
-        if (jwtUtils.isTokenValid(jwt) && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String role = jwtUtils.extractRole(jwt);
-            Integer id = jwtUtils.extractId(jwt);
+        Claims claims = jwtUtils.extractAllClaims(jwt);
 
-            List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+        if (claims != null && claims.getExpiration().after(new java.util.Date())
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    String.valueOf(id),
-                    null,
-                    authorities
-            );
+            String role = jwtUtils.extractRole(claims);
+            Integer id = jwtUtils.extractId(claims);
 
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            if (role != null) {
+                List<SimpleGrantedAuthority> authorities =
+                        Collections.singletonList(new SimpleGrantedAuthority(role));
 
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        String.valueOf(id),
+                        null,
+                        authorities
+                );
+
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
         }
 
         filterChain.doFilter(request, response);

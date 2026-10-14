@@ -13,7 +13,6 @@ import java.util.Map;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
 
-    // Μετράει πόσα ραντεβού έχουν ήδη κλειστεί για συγκεκριμένη εξέταση σε συγκεκριμένη ημέρα
     long countByExamIDAndAppointmentDate(int examID, LocalDate appointmentDate);
 
     @Query("""

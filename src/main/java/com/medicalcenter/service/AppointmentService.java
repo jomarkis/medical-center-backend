@@ -41,7 +41,6 @@ public class AppointmentService {
     }
 
     public List<Appointment> getAppointments(Integer examID, Integer patientID, Integer doctorID, LocalDate date) {
-        // Ελέγχουμε μόνο όσα πεδία έχουν δοθεί πραγματικά από το frontend
         if (examID != null && !examRepository.existsById(examID)) {
             throw new IllegalArgumentException("Exam not found with ID: " + examID);
         }
@@ -52,7 +51,6 @@ public class AppointmentService {
             throw new IllegalArgumentException("Doctor not found with ID: " + doctorID);
         }
 
-        // Αν όλα τα δοθέντα IDs είναι έγκυρα, εκτελείται το συνδυαστικό query
         return appointmentRepository.findWithFilters(examID, patientID, doctorID, date);
     }
 

@@ -23,7 +23,7 @@ public class AppointmentController {
     @Autowired
     private AppointmentService appointmentService;
 
-    // GET /api/appointments ή φιλτράρισμα με ?examID=.. ή ?patientID=..
+    // GET /api/appointments ?examID= or ?patientID= or ?doctorID= or ?date=
     @GetMapping
     public List<Appointment> getAppointments(
             @RequestParam(required = false) Integer examID,
@@ -46,7 +46,7 @@ public class AppointmentController {
         return appointmentService.getAppointments(examID, patientID, doctorID, date);
     }
 
-    // POST /api/appointments -> Κλείσιμο νέου ραντεβού
+    // POST /api/appointments
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Appointment createAppointment(@Valid @RequestBody AppointmentRequest request) {

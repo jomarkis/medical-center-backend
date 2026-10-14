@@ -16,7 +16,7 @@ public class Doctor {
     private String specialty;
     private int years;
 
-    // Default constructor (υποχρεωτικός για το JPA/Hibernate)
+    // Default constructor
     public Doctor() {
     }
 
