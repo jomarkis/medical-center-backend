@@ -21,7 +21,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     WHERE (:examID IS NULL OR a.examID = :examID)
       AND (:patientID IS NULL OR a.patientID = :patientID)
       AND (:doctorID IS NULL OR e.doctorID = :doctorID)
-      AND (:date IS NULL OR a.appointmentDate = :date)
+      AND (cast(:date as date) IS NULL OR a.appointmentDate = :date)
 """)
     List<Appointment> findWithFilters(
             @Param("examID") Integer examID,

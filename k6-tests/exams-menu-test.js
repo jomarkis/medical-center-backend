@@ -60,7 +60,7 @@ export default function (data) {
     sleep(1);
 
     group('Get Exams List with filter', function () {
-        const res = http.get(`${BASE_URL}/exams?doctorId=${data.doctorId}`, headers);
+        const res = http.get(`${BASE_URL}/exams?doctorID=${data.doctorId}`, headers);
         check(res, {
             'filtered exams status 200': (r) => r.status === 200,
         });
